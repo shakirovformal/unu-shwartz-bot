@@ -168,3 +168,27 @@ func validateRowNumber(rowNumber string) error {
 	}
 	return nil
 }
+
+func (db *Db) ClearDB(ctx context.Context, rdb *redis.Client) error {
+	_, err := rdb.Ping(ctx).Result()
+	if err != nil {
+		log.Fatal("Ошибка подключения к Redis:", err)
+	}
+
+	// Теперь можно безопасно использовать Scan
+	var cursor uint64
+
+	for {
+		var err error
+		_, cursor, err = rdb.Scan(ctx, cursor, "flushdb", 100).Result()
+		if err != nil {
+			log.Fatal("Ошибка при удалении всех ключей:", err)
+		}
+
+
+		if cursor == 0 {
+			break
+		}
+	}
+	return nil
+}

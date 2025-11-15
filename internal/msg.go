@@ -13,6 +13,7 @@ import (
 	"github.com/go-telegram/bot/models"
 	"github.com/shakirovformal/unu_project_api_realizer/config"
 	"github.com/shakirovformal/unu_project_api_realizer/internal/pkg"
+	"github.com/shakirovformal/unu_project_api_realizer/pkg/database"
 )
 
 var cfg = config.Load()
@@ -249,6 +250,9 @@ func handleDeleteFolderIdInput(ctx context.Context, b *bot.Bot, update *models.U
 	})
 
 	folderIdInt, err := strconv.Atoi(folderId)
+	if err != nil {
+		slog.Error("Ошибка конвертации номера папки из string в int:", "ERROR:", err)
+	}
 	ctxWT, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	err = req.DeleteFolder(ctxWT, folderIdInt)
@@ -269,26 +273,25 @@ func handleDeleteFolderIdInput(ctx context.Context, b *bot.Bot, update *models.U
 }
 
 func createTask(ctx context.Context, b *bot.Bot, update *models.Update) {
-	// ctxWT, cancel := context.WithTimeout(ctx, time.Second*30)
-	// defer cancel()
+	ctxWT, cancel := context.WithTimeout(ctx, time.Second*30)
+	defer cancel()
 	slog.Info(fmt.Sprintf("User '%s' wrote '%s' for create folder", update.Message.Chat.Username, update.Message.Text))
 	chatID := update.Message.Chat.ID
 	// FIXME: Сделать здесь логику, чтобы при входе в данную функцию, сначала проверялась очередь.
 	// Есть ли незавершенные задачи? Если есть, нужно ли обработать их в первую очередь или оставить на потом?
-	// db := database.NewDB(cfg.DB_HOST, cfg.DB_PASSWORD, cfg.DB_DB)
-	// rdb := db.Connect(db)
-	// stringUnfullfilled, err := db.CheckUnfullfilledRows(ctxWT, rdb)
-	// if err != nil {
-	// 	slog.Error("Простите, произошла какая-то неизвестная ошибка с базой данных, пожалуйста поправьте")
-	// }
-	// fmt.Println("Незавершенные задачи в базе:", stringUnfullfilled)
-	// if len(stringUnfullfilled) > 0 {
-	// 	b.SendMessage(ctx, &bot.SendMessageParams{
-	// 		ChatID: update.Message.Chat.ID,
-	// 		Text:   fmt.Sprintf("Дело в том, что перед тем как создать новые задачи, давайте разберёмся со старыми. Я сходил в базу данных и нашёл строки, которые по каким-то либо причинам не были обработаны. Вот список %v", stringUnfullfilled),
-	// 	})
-	// }
-
+	db := database.NewDB(cfg.DB_HOST, cfg.DB_PASSWORD, cfg.DB_DB)
+	rdb := db.Connect(db)
+	stringUnfullfilled, err := db.CheckUnfullfilledRows(ctxWT, rdb)
+	if err != nil {
+		slog.Error("Простите, произошла какая-то неизвестная ошибка с базой данных, пожалуйста поправьте")
+	}
+	fmt.Println("Незавершенные задачи в базе:", stringUnfullfilled)
+	if len(stringUnfullfilled) > 0 {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   fmt.Sprintf("Дело в том, что перед тем как создать новые задачи, давайте разберёмся со старыми. Я сходил в базу данных и нашёл строки, которые по каким-то либо причинам не были обработаны. Вот список %v", stringUnfullfilled),
+		})
+	}
 	// Проверили что задач нет, запрашиваем у клиента номера строк для выполнения
 	setState(chatID, &UserState{
 		State:   STATE_WAIT_INPUT_ROWS,
@@ -346,7 +349,7 @@ func handleTaskRowInput(ctx context.Context, b *bot.Bot, update *models.Update, 
 
 	ctxWT, cancel := context.WithTimeout(ctx, time.Second*30)
 	defer cancel()
-	for i := beginRowInt; i < endRowInt; i++ {
+	for i := beginRowInt; i <= endRowInt; i++ {
 		// Создаем task
 		taskObject, err := req.AddTask(ctxWT, update.Message.ID, beginRowString)
 		if err != nil {
@@ -428,6 +431,7 @@ func handleDeleteTaskIdInput(ctx context.Context, b *bot.Bot, update *models.Upd
 	})
 	clearState(chatID)
 }
+// общий обработчик сообщений.
 func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	chatID := update.Message.Chat.ID

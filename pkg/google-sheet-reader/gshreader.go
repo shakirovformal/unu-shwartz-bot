@@ -13,7 +13,7 @@ import (
 
 func googleServiceConstructor(ctx context.Context) *sheets.Service {
 
-	svc, err := sheets.NewService(ctx, option.WithCredentialsFile("/home/rinat/Desktop/unu_project/go/config/creds.json"))
+	svc, err := sheets.NewService(ctx, option.WithCredentialsFile("config/creds.json"))
 	if err != nil {
 		slog.Error("Err is:", "ERROR", err)
 	}
