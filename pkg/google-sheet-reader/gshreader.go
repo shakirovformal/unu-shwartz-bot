@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"path/filepath"
 
 	"github.com/shakirovformal/unu_project_api_realizer/pkg/models"
 	"google.golang.org/api/option"
@@ -12,8 +13,12 @@ import (
 )
 
 func googleServiceConstructor(ctx context.Context) *sheets.Service {
-
-	svc, err := sheets.NewService(ctx, option.WithCredentialsFile("config/creds.json"))
+	filePath := "config/creds.json"
+	absPathConfigFile, err := filepath.Abs(filePath)
+	if err != nil {
+		panic(err)
+	}
+	svc, err := sheets.NewService(ctx, option.WithCredentialsFile(absPathConfigFile))
 	if err != nil {
 		slog.Error("Err is:", "ERROR", err)
 	}
@@ -37,8 +42,6 @@ func Reader(spreadsheetId, spreadsheetName string, rowNumber string) (*sheets.Va
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
 		return nil, models.ErrorGoogleSheet
 	}
-
-
 
 	return resp, nil
 }

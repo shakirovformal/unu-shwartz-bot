@@ -28,7 +28,12 @@ func NewProjectMatcher() *ProjectMatcher {
 
 // LoadConfig загружает конфигурацию из файла
 func (pm *ProjectMatcher) LoadConfig() error {
-	data, err := os.ReadFile("/home/rinat/Desktop/unu_project/go/config/config.conf")
+	filePath := "config/config.conf"
+	absPathConfigFile, err := filepath.Abs(filePath)
+	if err != nil {
+		panic(err)
+	}
+	data, err := os.ReadFile(absPathConfigFile)
 	if err != nil {
 		return fmt.Errorf("ошибка чтения конфига: %v", err)
 	}
