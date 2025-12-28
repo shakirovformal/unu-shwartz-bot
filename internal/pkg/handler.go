@@ -10,7 +10,6 @@ import (
 
 	api "github.com/shakirovformal/unu_api"
 	"github.com/shakirovformal/unu_project_api_realizer/config"
-	"github.com/shakirovformal/unu_project_api_realizer/pkg/database"
 	gsr "github.com/shakirovformal/unu_project_api_realizer/pkg/google-sheet-reader"
 	"github.com/shakirovformal/unu_project_api_realizer/pkg/models"
 	"github.com/shakirovformal/unu_project_api_realizer/pkg/utils"
@@ -105,8 +104,10 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 	if len(fmt.Sprint(resp.Values[0][3])) > 2300 {
 		return nil, models.LongMessage
 	}
-	projectName := fmt.Sprint(resp.Values[0][0])
-	datepublic := fmt.Sprint(resp.Values[0][5])
+
+	// projectName := fmt.Sprint(resp.Values[0][0])
+	// datepublic := fmt.Sprint(resp.Values[0][5])
+	slog.Info("Ошибки до этого момента не произошло")
 	//Получить имя для задачи
 	name, err := utils.GetName(resp)
 	if err != nil {
@@ -165,21 +166,23 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 	targeting_geo_country_id := 1
 
 	slog.Info("Host for connect", "INFO", cfg.DB_HOST)
-	db := database.NewDB(cfg.DB_HOST, cfg.DB_PASSWORD, cfg.DB_DB)
-	rdb := db.Connect(db)
-	rowObj := models.NewRowObject(userID, projectName, link, targeting_gender, descr, datepublic)
-	db.AddRow(ctx, rdb, rowWork, rowObj)
+
+	// db := database.NewDB(cfg.DB_HOST, cfg.DB_PASSWORD, cfg.DB_DB)
+	// rdb := db.Connect(db)
+	// rowObj := models.NewRowObject(userID, projectName, link, targeting_gender, descr, datepublic)
+	// db.AddRow(ctx, rdb, rowWork, rowObj)
 
 	respApi, err := s.c.Add_task(ctx, name, descr, link, need_for_report, price, tarif_id, folder_id,
 		need_screen, false, time_for_work, time_for_check, 0, 0, 0, 0, 0, 0, "", "", 0, 0, targeting_gender, 0, 0, targeting_geo_country_id, 0, 0, 0, "")
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(respApi)
 	task_id, err := respApi.TaskID.Int64()
 	if err != nil {
 		return nil, models.ErrorUnmarshallJSON
 	}
-	db.DelRow(ctx, rdb, rowWork)
+	// db.DelRow(ctx, rdb, rowWork)
 	return &models.AddedTask{
 		Name:   name,
 		Price:  price,

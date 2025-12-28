@@ -13,6 +13,7 @@ import (
 )
 
 func googleServiceConstructor(ctx context.Context) *sheets.Service {
+	// TODO: убрать лишние подъемы по директориям config/creds.json
 	filePath := "config/creds.json"
 	absPathConfigFile, err := filepath.Abs(filePath)
 	if err != nil {

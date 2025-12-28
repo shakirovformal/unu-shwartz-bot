@@ -59,6 +59,10 @@ func NewSiteMatcherForDescr() *SiteMatcher {
 				Pattern: regexp.MustCompile(`sravni\.ru`),
 				Cell:    "F3",
 			},
+			{
+				Pattern: regexp.MustCompile(`2gis\.ru`),
+				Cell:    "H3",
+			},
 		},
 	}
 }
@@ -87,5 +91,5 @@ func (sm *SiteMatcher) GetCellForURLDescrTask(url string) (string, error) {
 			return pattern.Cell, nil
 		}
 	}
-	return "H3", models.ErrorMatchingSite // или какое-то значение по умолчанию
+	return "I3", models.ErrorMatchingSite // или какое-то значение по умолчанию
 }

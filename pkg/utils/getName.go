@@ -33,6 +33,7 @@ func GetName(respData *sheets.ValueRange) (string, error) {
 	// Example: 27.10.2025 ОПУБЛИКОВАТЬ ГОТОВЫЙ отзыв мужской аккаунт
 
 	task_name = fmt.Sprintf("%s %s %s отзыв", publicationDate, ref, gender)
+	slog.Info("Длина имени для задачи", "LENGTH", len(task_name))
 	return task_name, nil
 }
 
@@ -317,6 +318,10 @@ func NewSiteMatcher() *SiteMatcher {
 			{
 				Pattern: regexp.MustCompile(`sravni\.ru`),
 				Cell:    "F2",
+			},
+			{
+				Pattern: regexp.MustCompile(`2gis\.ru`),
+				Cell:    "H2",
 			},
 		},
 	}

@@ -37,6 +37,10 @@ func NewSiteMatcherForTariff() *SiteMatcherForTariff {
 				PatternTariff: regexp.MustCompile(`irecommend\.ru`),
 				TariffID:      40,
 			},
+			{
+				PatternTariff: regexp.MustCompile(`2gis\.ru`),
+				TariffID:      38,
+			},
 		},
 	}
 }
