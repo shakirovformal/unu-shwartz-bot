@@ -12,6 +12,7 @@ import (
 	"github.com/shakirovformal/unu_project_api_realizer/config"
 	gsr "github.com/shakirovformal/unu_project_api_realizer/pkg/google-sheet-reader"
 	"github.com/shakirovformal/unu_project_api_realizer/pkg/models"
+	"github.com/shakirovformal/unu_project_api_realizer/pkg/shortener"
 	"github.com/shakirovformal/unu_project_api_realizer/pkg/utils"
 )
 
@@ -96,6 +97,7 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 	//"""Обработка в функции идёт только 1 строки"""
 
 	//Пойти в таблицу и получить строку
+	fmt.Printf("\n==\nДля получения данных из таблицы, рабочая строка №%s\n==\n", rowWork)
 	cfg := config.Load()
 	resp, err := gsr.Reader(cfg.SPREADSHEETID, cfg.SHEETLIST, rowWork)
 	if err != nil {
@@ -122,7 +124,13 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 		return nil, err
 	}
 	//Получить ссылку для задания
-	link := fmt.Sprint(resp.Values[0][1])
+	link_long := fmt.Sprint(resp.Values[0][1])
+	tarif_id, err := utils.GetTariff(link_long)
+
+	link, err := shortener.ShortLink(link_long)
+	if err != nil {
+		return nil, err
+	}
 	//Получить данные: что нужно для выполнения задания
 	needReport, err := gsr.ReaderFromCell(cfg.SPREADSHEETID, "REFERENCE", "H1")
 	if err != nil {
@@ -130,12 +138,12 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 	}
 	need_for_report := fmt.Sprint(needReport.Values[0][0])
 	//понять, какой тариф выбрать
-	tarif_id, err := utils.GetTariff(link)
 	if err != nil {
 		slog.Error("Ошибка получения id тарифа для задания")
 	}
 	//получить стоимость задания
 	priceInt := utils.GetActualPriceFromTariffID(tarif_id)
+
 	price := float64(priceInt)
 	//понять в какую папку сохранить задание
 
@@ -171,7 +179,7 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 	// rdb := db.Connect(db)
 	// rowObj := models.NewRowObject(userID, projectName, link, targeting_gender, descr, datepublic)
 	// db.AddRow(ctx, rdb, rowWork, rowObj)
-
+	slog.Info("Ссылка которую я вставляю", "Link", link)
 	respApi, err := s.c.Add_task(ctx, name, descr, link, need_for_report, price, tarif_id, folder_id,
 		need_screen, false, time_for_work, time_for_check, 0, 0, 0, 0, 0, 0, "", "", 0, 0, targeting_gender, 0, 0, targeting_geo_country_id, 0, 0, 0, "")
 	if err != nil {

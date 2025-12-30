@@ -307,7 +307,7 @@ func handleTaskRowInput(ctx context.Context, b *bot.Bot, update *models.Update, 
 	listTasks := []int64{}
 	chatID := update.Message.Chat.ID
 	task_list_message := strings.TrimSpace(update.Message.Text)
-
+	
 	if len(task_list_message) == 0 {
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatID,
@@ -317,7 +317,7 @@ func handleTaskRowInput(ctx context.Context, b *bot.Bot, update *models.Update, 
 	}
 	rows := strings.Split(update.Message.Text, "-")
 	beginRowString, endRowString := rows[0], rows[1]
-
+	slog.Info("Здесь ошибки нет TEST")
 	beginRowInt, err := strconv.Atoi(beginRowString)
 	if err != nil {
 		slog.Error(fmt.Sprintf("Ошибка конвертации значения для начальной строки... Просьба проверить корректность. Пользователь %s попытался ввёл: %s что привело к данной ошибке", update.Message.Chat.Username, update.Message.Text))
@@ -339,7 +339,7 @@ func handleTaskRowInput(ctx context.Context, b *bot.Bot, update *models.Update, 
 		clearState(chatID)
 		return
 	}
-
+	slog.Info("Здесь ошибки нет TEST")
 	// Показываем что начали обработку
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatID,
@@ -350,7 +350,8 @@ func handleTaskRowInput(ctx context.Context, b *bot.Bot, update *models.Update, 
 	defer cancel()
 	for i := beginRowInt; i <= endRowInt; i++ {
 		// Создаем task
-		taskObject, err := req.AddTask(ctxWT, update.Message.ID, beginRowString)
+		time.Sleep(time.Second*2)
+		taskObject, err := req.AddTask(ctxWT, update.Message.ID, strconv.Itoa(i))
 		if err != nil {
 			slog.Error("Ошибка создания задачи:", "ERROR:", err)
 			b.SendMessage(ctx, &bot.SendMessageParams{

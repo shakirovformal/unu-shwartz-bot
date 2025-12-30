@@ -57,6 +57,6 @@ func RunBot() {
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/create_task", bot.MatchTypeExact, createTask)
 
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/delete_task", bot.MatchTypeExact, deleteTask)
-
+	
 	b.Start(ctx)
 }
