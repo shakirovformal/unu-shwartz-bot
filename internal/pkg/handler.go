@@ -109,7 +109,6 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 
 	// projectName := fmt.Sprint(resp.Values[0][0])
 	// datepublic := fmt.Sprint(resp.Values[0][5])
-	slog.Info("Ошибки до этого момента не произошло")
 	//Получить имя для задачи
 	name, err := utils.GetName(resp)
 	if err != nil {
@@ -132,7 +131,7 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 		return nil, err
 	}
 	//Получить данные: что нужно для выполнения задания
-	needReport, err := gsr.ReaderFromCell(cfg.SPREADSHEETID, "REFERENCE", "H1")
+	needReport, err := gsr.ReaderFromCell(cfg.SPREADSHEETID, "REFERENCE", "I1")
 	if err != nil {
 		slog.Error("Ошибка получения данных из таблицы")
 	}
@@ -142,9 +141,10 @@ func (s *Sender) AddTask(ctx context.Context, userID int, rowWork string) (*mode
 		slog.Error("Ошибка получения id тарифа для задания")
 	}
 	//получить стоимость задания
-	priceInt := utils.GetActualPriceFromTariffID(tarif_id)
+	// priceInt := utils.GetActualPriceFromTariffID(tarif_id)
 
-	price := float64(priceInt)
+	// price := float64(priceInt)
+	var price float64 = 50
 	//понять в какую папку сохранить задание
 
 	matcher := utils.NewProjectMatcher()
